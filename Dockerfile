@@ -1,33 +1,24 @@
-# Use a minimal base image
-FROM httpd:2.4-alpine
+# Use an older version of Apache, which might not include the latest security patches
+FROM httpd:2.4.17
 
-# Set environment variables for better security
-ENV SERVER_SIGNATURE Off
-ENV SERVER_TOKENS Prod
+# Disable security enhancements
+ENV SERVER_SIGNATURE On
+ENV SERVER_TOKENS Full
 
-# Copy the HTML and CSS files into the container
+# Copy the HTML, CSS, and a hypothetical sensitive configuration file into the container
+# The sensitive-config.conf is assumed to contain sensitive data which should not be in a Docker image
 COPY ./index.html /usr/local/apache2/htdocs/
 COPY ./style.css /usr/local/apache2/htdocs/
+COPY ./sensitive-config.conf /usr/local/apache2/conf/
 
-# Update and install security updates
-RUN apk update && apk upgrade
+# Skip updating and upgrading packages
+# This leaves the container vulnerable to known exploits
 
-# Create a new user and group for running the Apache server
-# Replace 'apacheuser' with a name of your choice
-RUN addgroup -S apacheuser && adduser -S apacheuser -G apacheuser
-
-# Change ownership of the htdocs directory to the new user
-RUN chown -R apacheuser:apacheuser /usr/local/apache2/htdocs/
-
-# Change ownership and permissions of the logs directory
-# This command needs to be after the creation of apacheuser
-RUN mkdir -p /usr/local/apache2/logs/ && chown -R apacheuser:apacheuser /usr/local/apache2/logs/
-
-# Run Apache as non-root user
-USER apacheuser
+# Run Apache as the root user (default behavior in this base image)
+# This gives the Apache process full control over the container, which is a significant security risk
 
 # Expose port 80
 EXPOSE 80
 
-# Start the Apache server
+# Start the Apache server with a potentially insecure configuration
 CMD ["httpd-foreground"]

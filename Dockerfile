@@ -1,5 +1,5 @@
 # Use an older version of Apache, which might not include the latest security patches
-FROM httpd:2.4.17
+FROM httpd:2.2
 
 # Disable security enhancements
 ENV SERVER_SIGNATURE On
